@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"github.com/itozll/iskep/cmd/options"
-	"github.com/itozll/iskep/pkg/iflag"
+	"github.com/itozll/iskep/runtime/iflag"
 	"github.com/spf13/cobra"
 )
 

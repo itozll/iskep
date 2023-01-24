@@ -4,12 +4,10 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/itozll/iskep/cmd/options"
-	"github.com/itozll/iskep/pkg/iflag"
-	"github.com/spf13/cobra"
+	"github.com/itozll/iskep/runtime/iflag"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -30,12 +28,6 @@ to quickly create a Iskep application.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("root called", options.GroupName.Value())
-		fmt.Printf("%+v\n", options.GoVersion.Value())
-		fmt.Printf("%+v\n", options.Verbose.Value())
-		fmt.Println(options.GroupName.Value())
-	},
 }).Cobra()
 
 // Execute adds all child commands to the root command and sets flags appropriately.
