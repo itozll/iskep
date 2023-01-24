@@ -37,9 +37,9 @@ func (f *flag[T]) call(p *T, name, shorthand string, value T, usage string) *fla
 	if p != nil {
 		if binders[unsafe.Pointer(p)] {
 			panic("重复绑定变量: " + name)
-		} else {
-			binders[unsafe.Pointer(p)] = true
 		}
+
+		binders[unsafe.Pointer(p)] = true
 	}
 
 	return &flag[T]{
