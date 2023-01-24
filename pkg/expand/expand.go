@@ -10,7 +10,7 @@ func Do(name, value string) map[string]string {
 
 	return map[string]string{
 		name + "_pascal": pascal(elements),
-		name + "_camel":  pascal(elements),
+		name + "_camel":  camel(elements),
 		name + "_snake":  snake(elements),
 		name + "_kebad":  kebad(elements),
 	}
@@ -19,10 +19,10 @@ func Do(name, value string) map[string]string {
 type chType int8
 
 const (
-	chUpper chType = iota
+	chInvalid chType = iota
+	chUpper
 	chLower
 	chDigit
-	chUnknown
 )
 
 func hitCharType(c rune) chType {
@@ -35,7 +35,7 @@ func hitCharType(c rune) chType {
 		return chDigit
 	}
 
-	return chUnknown
+	return chInvalid
 }
 
 func split(name string) (v []string) {
@@ -54,13 +54,13 @@ func split(name string) (v []string) {
 			}
 
 			curStr = ""
-			typ = chUnknown
+			typ = chInvalid
 			ch = 0
 			continue
 		}
 
 		t := hitCharType(c)
-		if t == chUnknown {
+		if t == chInvalid {
 			if curStr != "" {
 				v = _append(v, curStr)
 				curStr = ""
