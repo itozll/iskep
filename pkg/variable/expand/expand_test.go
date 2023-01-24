@@ -3,8 +3,9 @@ package expand_test
 import (
 	"testing"
 
-	"github.com/itozll/iskep/pkg/expand"
 	"github.com/smartystreets/goconvey/convey"
+
+	"github.com/itozll/iskep/pkg/variable/expand"
 )
 
 var test_elements = []struct {
