@@ -3,4 +3,4 @@
 ## 新建项目
 
 ```
-iskep new <>
+iskep new <> [options]
