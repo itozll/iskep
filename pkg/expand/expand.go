@@ -5,6 +5,17 @@ import (
 	"unicode"
 )
 
+func Do(name, value string) map[string]string {
+	elements := split(value)
+
+	return map[string]string{
+		name + "_pascal": pascal(elements),
+		name + "_camel":  pascal(elements),
+		name + "_snake":  snake(elements),
+		name + "_kebad":  kebad(elements),
+	}
+}
+
 type chType int8
 
 const (
@@ -99,4 +110,27 @@ func split(name string) (v []string) {
 
 func _append(v []string, str string) []string {
 	return append(v, strings.ToLower(str))
+}
+
+func _separate(elements []string, delimiter string) string {
+	return strings.Join(elements, delimiter)
+}
+
+func _pascal(elements []string, ignoreTheFirst bool) string {
+	arr := make([]string, len(elements))
+	for index, elem := range elements {
+		if ignoreTheFirst {
+			arr[index] = elem
+			ignoreTheFirst = false
+		} else {
+			if FixedElements[elem] {
+				arr[index] = strings.ToUpper(elem)
+				continue
+			}
+
+			arr[index] = strings.ToUpper(elem[:1]) + elem[1:]
+		}
+	}
+
+	return strings.Join(arr, "")
 }
