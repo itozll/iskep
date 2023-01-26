@@ -17,7 +17,8 @@ type (
 		Argument
 	}
 
-	handlerNewFlag[T any] func(set *pflag.FlagSet, p *T, name, shorthand string, value T, usage string)
+	handlerNewFlag[T any]  func(set *pflag.FlagSet, p *T, name, shorthand string, value T, usage string)
+	handlerNewFlag2[T any] func(set *pflag.FlagSet, p *T, name, shorthand string, usage string)
 
 	flag[T any] struct {
 		Name    string
@@ -32,6 +33,11 @@ type (
 var binders = map[unsafe.Pointer]bool{}
 
 func newFlag[T any](pf handlerNewFlag[T]) *flag[T] { return &flag[T]{pf: pf} }
+func newFlag2[T any](pf handlerNewFlag2[T]) *flag[T] {
+	return &flag[T]{pf: func(set *pflag.FlagSet, p *T, name, shorthand string, _ T, usage string) {
+		pf(set, p, name, shorthand, usage)
+	}}
+}
 
 func (f *flag[T]) call(p *T, name, shorthand string, value T, usage string) *flag[T] {
 	if p != nil {
@@ -69,10 +75,6 @@ func (arg *flag[T]) Bind(set *pflag.FlagSet) {
 	)
 }
 
-func countVarP(pf *pflag.FlagSet, p *int, name, shorthand string, _ int, usage string) {
-	(*pflag.FlagSet).CountVarP(pf, p, name, shorthand, usage)
-}
-
 var (
 	NewBytes          = newFlag((*pflag.FlagSet).BytesBase64VarP).call
 	NewBool           = newFlag((*pflag.FlagSet).BoolVarP).call
@@ -85,7 +87,6 @@ var (
 	NewFloat64Slice   = newFlag((*pflag.FlagSet).Float64SliceVarP).call
 	NewDuration       = newFlag((*pflag.FlagSet).DurationVarP).call
 	NewDurationSlice  = newFlag((*pflag.FlagSet).DurationSliceVarP).call
-	NewCount          = newFlag(countVarP).call
 	NewInt            = newFlag((*pflag.FlagSet).IntVarP).call
 	NewIntSlice       = newFlag((*pflag.FlagSet).IntSliceVarP).call
 	NewInt8           = newFlag((*pflag.FlagSet).Int8VarP).call
@@ -106,4 +107,6 @@ var (
 	NewStringToInt    = newFlag((*pflag.FlagSet).StringToIntVarP).call
 	NewStringToInt64  = newFlag((*pflag.FlagSet).StringToInt64VarP).call
 	NewStringToString = newFlag((*pflag.FlagSet).StringToStringVarP).call
+
+	NewCount = newFlag2((*pflag.FlagSet).CountVarP).call
 )
