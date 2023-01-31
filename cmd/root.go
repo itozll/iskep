@@ -5,16 +5,18 @@ package cmd
 
 import (
 	"os"
+	"path/filepath"
 
 	"github.com/itozll/iskep/cmd/options"
-	"github.com/itozll/iskep/runtime/iflag"
+	"github.com/itozll/iskep/pkg/runtime/iflag"
 )
+
+var appName = filepath.Base(os.Args[0])
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = (&iflag.Command{
 	Use: "iskep",
 	PersistentArguments: []iflag.Argument{
-		options.GoVersion,
 		options.Verbose,
 		options.DryRun,
 	},

@@ -11,5 +11,5 @@ func Kebad(str string) string {
 }
 
 func kebad(elements []string) string {
-	return _separate(elements, "_")
+	return _separate(elements, "-")
 }

@@ -5,32 +5,59 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"strings"
 
 	"github.com/itozll/iskep/cmd/options"
-	"github.com/itozll/iskep/runtime/iflag"
+	"github.com/itozll/iskep/internal/etcd"
+	"github.com/itozll/iskep/pkg/process/build"
+	"github.com/itozll/iskep/pkg/runtime/iflag"
+	"github.com/itozll/iskep/pkg/runtime/rtinfo"
 	"github.com/spf13/cobra"
 )
 
 // newCmd represents the new command
 var newCmd = &iflag.Command{
-	Use:   "new",
-	Short: "A brief description of your command",
+	Use:     "new [flags] <workspace>",
+	Aliases: []string{"n"},
+	Short:   "create an go workspace",
 	Arguments: []iflag.Argument{
+		options.GoVersion,
 		options.GroupName,
+		options.Path,
+		options.Local,
 	},
-	Long: `Add (iskep new) will create a new command, with a license and
-the appropriate structure for a Cobra-based CLI application,
-and register it to its parent (default rootCmd).
+	Example: fmt.Sprintf(`  %s new --group mygroup myrepos
+  %s new mygroup/myrepos
+`, appName, appName),
+	SilenceUsage: true,
 
-If you want your command to be public, pass in the command name
-with an initial uppercase letter.
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) != 1 {
+			cmd.Help()
+			os.Exit(1)
+		}
 
-Example: iskep new server -> resulting in a new cmd/server.go`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("new called", options.GroupName.Value())
-		fmt.Printf("%+v\n", options.GoVersion.Value())
-		fmt.Printf("%+v\n", options.Verbose.Value())
-		fmt.Println(options.GroupName.Value())
+		return rtinfo.Init(args[0])
+	},
+
+	RunE: func(cmd *cobra.Command, args []string) error {
+		command, err := build.NewCommand(etcd.NewCommandConfig)
+		if err != nil {
+			return err
+		}
+
+		switch {
+		case options.Local.Value():
+			rtinfo.TargetPath = ""
+		case rtinfo.TargetPath == "":
+			rtinfo.TargetPath = rtinfo.Info.Project
+		case rtinfo.TargetPath != "":
+			rtinfo.TargetPath = strings.TrimRight(rtinfo.TargetPath, "/") + "/" + rtinfo.Info.Project
+		}
+
+		command.AttachMap(rtinfo.Binder())
+		return command.Exec(nil)
 	},
 }
 

@@ -9,6 +9,7 @@ func Do(name, value string) map[string]string {
 	elements := split(value)
 
 	return map[string]string{
+		name:             value,
 		name + "_pascal": pascal(elements),
 		name + "_camel":  camel(elements),
 		name + "_snake":  snake(elements),
