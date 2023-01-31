@@ -57,6 +57,8 @@ var newCmd = &iflag.Command{
 		}
 
 		command.AttachMap(rtinfo.Binder())
+		command.Attach("command", "server")
+		command.Attach("parent_cmd", "root")
 		return command.Exec(nil)
 	},
 }

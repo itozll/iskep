@@ -16,4 +16,5 @@ var (
 	Arg       = iflag.NewStringToString(nil, "arg", "a", nil, "specify variable list")
 	Parent    = iflag.NewString(&rtinfo.Parent, "parent", "", "root", "parent command")
 	Path      = iflag.NewString(&rtinfo.TargetPath, "path", "p", "", "current directory")
+	SkipGit   = iflag.NewBool(nil, "skip-git", "", false, "do not initialize a git repository")
 )

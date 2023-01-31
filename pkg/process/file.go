@@ -19,3 +19,19 @@ func ReadFile(name string) []byte {
 
 	return data
 }
+
+func Expand(body []byte, mapping map[string]string) string {
+	str := string(body)
+
+	if len(mapping) != 0 {
+		str = os.Expand(str, func(s string) string {
+			if v, ok := mapping[s]; ok {
+				return v
+			}
+
+			return "$" + s
+		})
+	}
+
+	return os.ExpandEnv(str)
+}
