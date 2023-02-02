@@ -10,7 +10,7 @@ import (
 )
 
 type Command struct {
-	cfg *model.Command
+	cfg *model.CommandConfig
 
 	before func() error
 	after  func() error
@@ -22,7 +22,7 @@ type Command struct {
 	actions []*Action
 }
 
-func NewCommand(cfg *model.Command) (*Command, error) {
+func NewCommand(cfg *model.CommandConfig) (*Command, error) {
 	if len(cfg.Actions) == 0 {
 		return nil, fmt.Errorf("no action")
 	}

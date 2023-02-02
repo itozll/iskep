@@ -1,6 +1,6 @@
 package model
 
-type Command struct {
+type CommandConfig struct {
 	Name        string `json:"name,omitempty" yaml:"name"`
 	Description string `json:"description,omitempty" yaml:"description"`
 	Style       string `json:"style,omitempty" yaml:"style"`

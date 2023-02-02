@@ -1,0 +1,28 @@
+# new command
+
+actions:
+    - template:
+        - README:.md
+        - Makefile
+        - main_go::main.go
+        - gomod::go.mod
+        - iskeprc::.iskeprc
+      copy:
+        - gitignore::.gitignore
+        - generator:.sh
+    - to: app/cmd
+      template:
+        - cmdroot::root.go
+        - cmdserver::server.go
+    - to: app/internal/runtime/rtinfo
+      template:
+        - context_go::context.go
+      copy:
+        - rtinfo_go::rtinfo.go
+after:
+    - cd $project
+    - go mod tidy
+    - git init -b main
+    - git remote add origin git@$repository.git
+    - git add .
+    - git commit -m 'Init Commit'

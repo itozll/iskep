@@ -2,7 +2,6 @@ package build
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -50,7 +49,6 @@ func (action *Action) Exec(path string, binder map[string]string) (err error) {
 		return
 	}
 
-	fmt.Println("path: ", path)
 	if path != "" {
 		path = strings.TrimRight(path, "/") + "/"
 	}
@@ -59,7 +57,6 @@ func (action *Action) Exec(path string, binder map[string]string) (err error) {
 		path += strings.TrimRight(action.cfg.To, "/") + "/"
 	}
 
-	fmt.Println("path: ", path)
 	if len(action.cfg.Template) > 0 {
 		if err := action.parseAndCopy(path, action.cfg.Template, binder, true); err != nil {
 			return err

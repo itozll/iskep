@@ -19,6 +19,7 @@ var rootCmd = (&iflag.Command{
 	PersistentArguments: []iflag.Argument{
 		options.Verbose,
 		options.DryRun,
+		options.Dump,
 	},
 	Short: "A brief description of your application",
 	Long: `A longer description that spans multiple lines and likely contains

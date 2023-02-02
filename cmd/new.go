@@ -10,6 +10,8 @@ import (
 
 	"github.com/itozll/iskep/cmd/options"
 	"github.com/itozll/iskep/internal/etcd"
+	"github.com/itozll/iskep/pkg/model"
+	"github.com/itozll/iskep/pkg/process"
 	"github.com/itozll/iskep/pkg/process/build"
 	"github.com/itozll/iskep/pkg/runtime/iflag"
 	"github.com/itozll/iskep/pkg/runtime/rtinfo"
@@ -42,11 +44,6 @@ var newCmd = &iflag.Command{
 	},
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		command, err := build.NewCommand(etcd.NewCommandConfig)
-		if err != nil {
-			return err
-		}
-
 		switch {
 		case options.Local.Value():
 			rtinfo.TargetPath = ""
@@ -56,7 +53,32 @@ var newCmd = &iflag.Command{
 			rtinfo.TargetPath = strings.TrimRight(rtinfo.TargetPath, "/") + "/" + rtinfo.Info.Project
 		}
 
-		command.AttachMap(rtinfo.Binder())
+		mapping := rtinfo.Binder()
+		if options.Dump.Value() {
+			for key, value := range mapping {
+				fmt.Printf(" .%s: %s\n", key, value)
+			}
+
+			return nil
+		}
+
+		// 非当前目录，并且项目目录已经存在时退出
+		if !options.Local.Value() && process.PathExists(rtinfo.Info.Project) {
+			return fmt.Errorf("`%s' exists", rtinfo.Info.Project)
+		}
+
+		config := model.CommandConfig{}
+		// 替换配置中的变量
+		if err := etcd.Unmarshal("new", mapping, &config); err != nil {
+			return err
+		}
+
+		command, err := build.NewCommand(&config)
+		if err != nil {
+			return err
+		}
+
+		command.AttachMap(mapping)
 		command.Attach("command", "server")
 		command.Attach("parent_cmd", "root")
 		return command.Exec(nil)

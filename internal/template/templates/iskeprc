@@ -1,0 +1,9 @@
+project:
+  go_version: {{ .go_version }}
+  workspace: {{ .workspace }}
+  repository: {{ .repository }}
+  domain: {{ .domain }}
+  group: {{ .group }}
+  project: {{ .project }}
+
+arguments:

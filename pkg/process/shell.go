@@ -1,6 +1,7 @@
 package process
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -23,6 +24,18 @@ func CommandOutput(cmdstr string, out io.Writer) func() error {
 	cmdstr = strings.TrimSpace(cmdstr)
 	if len(cmdstr) == 0 {
 		return nop
+	}
+
+	fmt.Println("cmd:", cmdstr)
+	if strings.HasPrefix(cmdstr, "cd ") || strings.HasPrefix(cmdstr, "cd\t") {
+		path := strings.TrimSpace(cmdstr[3:])
+		if path == "" {
+			return nop
+		}
+
+		return func() error {
+			return Chdir(path)
+		}
 	}
 
 	return func() error {
