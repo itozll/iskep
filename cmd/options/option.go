@@ -8,7 +8,7 @@ import (
 var (
 	GroupName = iflag.NewString(&rtinfo.Info.Group, "group", "g", "", "group name")
 	GoVersion = iflag.NewString(&rtinfo.Info.GoVersion, "go-version", "", "1.19", "go version")
-	Verbose   = iflag.NewBool(nil, "verbose", "V", false, "add more details to output logging")
+	Verbose   = iflag.NewCount(nil, "verbose", "v", 0, "add more details to output logging")
 	DryRun    = iflag.NewBool(nil, "dry-run", "", false, "run through and reports activity without writing out results")
 	File      = iflag.NewString(&rtinfo.File, "file", "f", "", "customize action with file")
 	FileType  = iflag.NewString(&rtinfo.FileType, "file-type", "", "yaml", "file type, support json/yaml")
