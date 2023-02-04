@@ -3,100 +3,151 @@ package build
 import (
 	"fmt"
 
+	"github.com/AlecAivazis/survey/v2"
+	"github.com/AlecAivazis/survey/v2/core"
+	"github.com/itozll/iskep/pkg/itemplate"
 	"github.com/itozll/iskep/pkg/model"
 	"github.com/itozll/iskep/pkg/variable/expand"
 )
 
 type Argument struct {
-	cfg   []*model.Argument
-	v     map[string]string
-	fixed map[string]bool
-
-	// 声明了 required 但不包含值的参数集合
-	lost map[string]*model.Argument
+	cfg []*model.Argument
 }
 
 func NewArgument(cfg []*model.Argument) (*Argument, error) {
 	arg := &Argument{
-		cfg:   cfg,
-		v:     make(map[string]string),
-		fixed: make(map[string]bool),
-		lost:  make(map[string]*model.Argument),
+		cfg: cfg,
 	}
 
-	for _, v := range cfg {
-		if v.Disabled {
-			continue
-		}
-
-		if v.Name == "" {
-			return nil, fmt.Errorf("argument: missing name")
-		}
-
-		// 当参数设置为 fixed 时，禁止替换该值
-		// 这有一个前提，字面值为空时允许替换
-		if arg.fixed[v.Name] {
-			continue
-		}
-
-		if v.Value == "" {
-			if v.Required {
-				arg.lost[v.Name] = v
-			}
-
-			continue
-		}
-
-		// 保存该参数的 fixed 状态
-		if v.Fixed {
-			arg.fixed[v.Name] = true
-		}
-
-		value, err := DoTemplate(v.Value, arg.v)
-		if err != nil {
-			return nil, err
-		}
-
-		if !v.Expansion {
-			arg.v[v.Name] = value
-			continue
-		}
-
-		for key, value := range expand.Do(v.Name, value) {
-			arg.v[key] = value
-		}
+	err := arg.validate()
+	if err != nil {
+		return nil, err
 	}
 
 	return arg, nil
 }
 
-func (arg *Argument) Arguments() map[string]string { return arg.v }
-
-func (arg *Argument) Load(cfg map[string]string) (args []*model.Argument) {
-loop:
-	for key, value := range cfg {
-		if value == "" {
+func (arg *Argument) validate() error {
+	m := map[string]bool{}
+	for _, cfg := range arg.cfg {
+		if cfg.Disabled || cfg.Fixed {
 			continue
 		}
 
-		delete(arg.lost, key)
-
-		for _, orig := range arg.cfg {
-			if key == orig.Name && orig.Expansion {
-				for k, v := range expand.Do(key, value) {
-					arg.v[k] = v
-				}
-
-				continue loop
-			}
+		if cfg.Name == "" {
+			return fmt.Errorf("argument: missing name")
 		}
 
-		arg.v[key] = value
+		if cfg.Description == "" {
+			return fmt.Errorf("argument: missing description")
+		}
+
+		// 可变参数需要保持唯一
+		if m[cfg.Name] {
+			return fmt.Errorf("argument: duplicate name (%s)", cfg.Name)
+		}
+		m[cfg.Name] = true
 	}
 
-	for _, v := range arg.lost {
-		args = append(args, v)
+	return nil
+}
+
+func (arg *Argument) Questions() []*survey.Question {
+	var questions []*survey.Question
+
+	for _, cfg := range arg.cfg {
+		if cfg.Disabled || cfg.Fixed {
+			continue
+		}
+
+		if len(cfg.Range) > 0 {
+			questions = append(questions, &survey.Question{
+				Name: cfg.Name,
+				Prompt: &survey.Select{
+					Message: cfg.Description,
+					Options: cfg.Range,
+					Default: cfg.Value,
+				},
+			})
+		} else {
+			prompt := &survey.Question{
+				Name: cfg.Name,
+				Prompt: &survey.Input{
+					Message: cfg.Description,
+					Default: cfg.Value,
+				},
+			}
+
+			if cfg.Required {
+				prompt.Validate = survey.Required
+			}
+
+			questions = append(questions, prompt)
+		}
+	}
+
+	return questions
+}
+
+func (arg *Argument) CompleteInterface(mapping map[string]any) {
+	m := map[string]string{}
+
+	for key, val := range mapping {
+		switch val := val.(type) {
+		case string:
+			m[key] = val
+		case core.OptionAnswer:
+			m[key] = val.Value
+		}
+	}
+
+	_ = arg.Complete(m)
+}
+
+func (arg *Argument) Complete(mapping map[string]string) (err error) {
+	for _, cfg := range arg.cfg {
+		if cfg.Disabled || cfg.Fixed {
+			continue
+		}
+
+		if v, ok := mapping[cfg.Name]; ok {
+			cfg.Value = v
+			continue
+		}
+
+		if cfg.Value == "" {
+			return fmt.Errorf("argument: missing value (%s)", cfg.Name)
+		}
 	}
 
 	return
+}
+
+func (arg *Argument) GenerateArguments() map[string]string {
+	arguments := map[string]string{}
+	fixed := map[string]bool{}
+	for _, cfg := range arg.cfg {
+		if !cfg.Fixed && fixed[cfg.Name] {
+			continue
+		}
+
+		value, err := itemplate.Parse(cfg.Value, arguments)
+		if err != nil {
+			return nil
+		}
+
+		if !cfg.Expansion {
+			arguments[cfg.Name] = value
+		} else {
+			for key, value := range expand.Do(cfg.Name, value) {
+				arguments[key] = value
+			}
+		}
+
+		if cfg.Fixed {
+			fixed[cfg.Name] = true
+		}
+	}
+
+	return arguments
 }

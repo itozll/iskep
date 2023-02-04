@@ -17,9 +17,14 @@ var Info = struct {
 	Repository string
 
 	// default github.com
-	Domain  string
-	Group   string
+	Domain string
+	Group  string
+
+	// 项目名称
 	Project string
+
+	// 项目目录
+	Directory string
 }{
 	Domain: "github.com",
 }
@@ -40,6 +45,7 @@ func Binder() map[string]string {
 		"domain":     Info.Domain,
 		"group":      Info.Group,
 		"project":    Info.Project,
+		"directory":  Info.Directory,
 	}
 }
 
@@ -57,6 +63,7 @@ func Init(workspace string) error {
 	}
 
 	Info.Project = project
+	Info.Directory = project
 	Info.Workspace = Info.Group + "/" + Info.Project
 	Info.Repository = Info.Domain + "/" + Info.Workspace
 

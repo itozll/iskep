@@ -1,4 +1,4 @@
-package build
+package itemplate
 
 import (
 	"bytes"
@@ -7,7 +7,10 @@ import (
 	"time"
 )
 
-var funcMap = map[string]any{
+var DelimLeft = "{{"
+var DelimRight = "}}"
+
+var FuncMap = map[string]any{
 	"date":          time.Now().Format,
 	"has_prefix":    strings.HasPrefix,
 	"has_no_prefix": func(s, prefix string) bool { return !strings.HasPrefix(s, prefix) },
@@ -17,16 +20,22 @@ var funcMap = map[string]any{
 	"trim_prefix":   strings.TrimPrefix,
 	"trim_suffix":   strings.TrimSuffix,
 	"contain":       strings.Contains,
+	"not_contain":   func(s, substr string) bool { return !strings.Contains(s, substr) },
+	"to_upper":      strings.ToUpper,
+	"to_lower":      strings.ToLower,
+	"replace":       strings.ReplaceAll,
+	"split":         strings.Split,
 }
 
-func DoTemplate(tpl string, args map[string]string) (string, error) {
-	if !strings.Contains(tpl, "{{") {
+func Parse(tpl string, args map[string]string) (string, error) {
+	if !strings.Contains(tpl, "{{") || !strings.Contains(tpl, "}}") {
 		return tpl, nil
 	}
 
-	t := template.New("build")
-	t.Funcs(funcMap)
-	_, err := t.Parse(tpl)
+	t, err := template.New("itemplate").
+		Delims(DelimLeft, DelimRight).
+		Funcs(FuncMap).
+		Parse(tpl)
 	if err != nil {
 		return "", nil
 	}

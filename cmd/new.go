@@ -11,7 +11,6 @@ import (
 	"github.com/itozll/iskep/cmd/options"
 	"github.com/itozll/iskep/internal/etcd"
 	"github.com/itozll/iskep/pkg/model"
-	"github.com/itozll/iskep/pkg/process"
 	"github.com/itozll/iskep/pkg/process/build"
 	"github.com/itozll/iskep/pkg/runtime/iflag"
 	"github.com/itozll/iskep/pkg/runtime/rtinfo"
@@ -56,16 +55,20 @@ var newCmd = &iflag.Command{
 		mapping := rtinfo.Binder()
 		if options.Dump.Value() {
 			for key, value := range mapping {
-				fmt.Printf(" .%s: %s\n", key, value)
+				fmt.Printf(" $%s: %s\n", key, value)
 			}
 
 			return nil
 		}
 
-		// 非当前目录，并且项目目录已经存在时退出
-		if !options.Local.Value() && process.PathExists(rtinfo.Info.Project) {
-			return fmt.Errorf("`%s' exists", rtinfo.Info.Project)
+		if !options.Local.Value() {
+			rtinfo.Info.Directory = ""
 		}
+
+		// // 非当前目录，并且项目目录已经存在时退出
+		// if !options.Local.Value() && process.PathExists(rtinfo.Info.Project) {
+		// 	return fmt.Errorf("`%s' exists", rtinfo.Info.Project)
+		// }
 
 		config := model.CommandConfig{}
 		// 替换配置中的变量

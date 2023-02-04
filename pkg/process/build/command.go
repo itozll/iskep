@@ -62,16 +62,16 @@ func (cmd *Command) AttachMap(binder map[string]string) {
 }
 
 func (cmd *Command) Exec(args map[string]string) (err error) {
-	lost := cmd.arguments.Load(args)
-	if lost != nil {
-		return fmt.Errorf("lost argument")
+	err = cmd.arguments.Complete(args)
+	if err != nil {
+		return err
 	}
 
 	if err = cmd.before(); err != nil {
 		return
 	}
 
-	for key, value := range cmd.arguments.Arguments() {
+	for key, value := range cmd.arguments.GenerateArguments() {
 		cmd.binder[key] = value
 	}
 

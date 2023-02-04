@@ -26,16 +26,31 @@ func CommandOutput(cmdstr string, out io.Writer) func() error {
 		return nop
 	}
 
-	fmt.Println("cmd:", cmdstr)
-	if strings.HasPrefix(cmdstr, "cd ") || strings.HasPrefix(cmdstr, "cd\t") {
-		path := strings.TrimSpace(cmdstr[3:])
-		if path == "" {
-			return nop
+	cmd, path, _ := strings.Cut(cmdstr, " ")
+	path = strings.TrimSpace(path)
+	switch cmd {
+	case "cd":
+		if path != "" {
+			return func() error {
+				return Chdir(path)
+			}
 		}
 
-		return func() error {
-			return Chdir(path)
+		return nop
+
+	case "exist":
+		if path != "" && PathNotExists(path) {
+			return func() error { return fmt.Errorf("directory `%s' not exists", path) }
 		}
+
+		return nop
+
+	case "not_exist":
+		if path != "" && PathExists(path) {
+			return func() error { return fmt.Errorf("directory `%s'  exists", path) }
+		}
+
+		return nop
 	}
 
 	return func() error {

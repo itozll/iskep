@@ -18,5 +18,6 @@ var (
 	Path      = iflag.NewString(&rtinfo.TargetPath, "path", "p", "", "current directory")
 	SkipGit   = iflag.NewBool(nil, "skip-git", "", false, "do not initialize a git repository")
 
-	Dump = iflag.NewBool(nil, "dump", "", false, "dump variables")
+	Interactive = iflag.NewBool(nil, "interactive", "i", false, "interactive mode")
+	Dump        = iflag.NewBool(nil, "dump", "", false, "dump variables")
 )

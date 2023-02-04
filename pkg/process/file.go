@@ -16,6 +16,11 @@ func PathExists(path string) bool {
 	return err == nil
 }
 
+func PathNotExists(path string) bool {
+	_, err := os.Stat(path)
+	return os.IsNotExist(err)
+}
+
 func ReadFile(name string) []byte {
 	_, err := os.Stat(name)
 	rtstatus.ExitIfError(err)
